@@ -132,9 +132,9 @@ The rest of the command is evaluated as an input file (e.g., `Tweak.xm.mm`).
 
 `-ggdb` tells the linker to produce debugging information for ggdb.
 
-**Note:** by default, clang uses [GNU ld](https://ftp.gnu.org/old-gnu/Manuals/ld-2.9.1/html_mono/ld.html) as its linker. To select an [alternate linker](https://clang.llvm.org/docs/Toolchain.html#linker), add the following flag to the command above: `-fuse-ld=<linker name>`
+**Note:** by default, clang uses [GNU ld](https://ftp.gnu.org/old-gnu/Manuals/ld-2.9.1/html_mono/ld.html) as its linker. To select an [alternate linker](https://clang.llvm.org/docs/Toolchain.html#linker), add the following flag to the command above: `-fuse-ld=<linker name>`.
 
-**Note 2:** If you're compiling for legacy architectures (armv7s and earlier), you'll want to add the following flags to the above command : `-Xlinker -segalign -Xlinker 4000`. For the reason as to why, see [here](https://github.com/theos/theos/blob/1e1c91ba1ff6dc63012fc3deed870787f4c402e5/makefiles/targets/_common/iphone.mk#L81).
+**Note 2:** if you're compiling for legacy architectures (armv7s and earlier), you'll want to add the following flags to the above command : `-Xlinker -segalign -Xlinker 4000`. For the reason as to why, see [here](https://github.com/theos/theos/blob/1e1c91ba1ff6dc63012fc3deed870787f4c402e5/makefiles/targets/_common/iphone.mk#L81).
 
 ---
 
@@ -164,9 +164,9 @@ Dpkg is picky about package structures, so we need to set this up properly in or
 ### Build the deb
 `dpkg-deb -b -Zgzip -z9 .tmp .`
 
-**Note:** Some packages will have to be built as root in order to retain the desired permissions/ownership. You will know if this is the case if something doesn't work as expected or if dpkg/apt throw errors upon the package's installation.
+**Note:** some packages will have to be built as root in order to retain the desired permissions/ownership. You will know if this is the case if something doesn't work as expected or if dpkg/apt throw errors upon the package's installation.
 
-**Note 2:** We are explicitly using gzip compression here to ensure compatibility with various dpkg versions (dpkg switched its default compression type to xz in v1.17.0).
+**Note 2:** we are explicitly using gzip compression here to ensure compatibility with various dpkg versions (dpkg switched its default compression type to xz in v1.17.0).
 
 ---
 
