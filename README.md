@@ -13,6 +13,7 @@ Things that you'll need:
 * Relevant [libraries](https://github.com/theos/lib)
 * [Logos](https://github.com/theos/logos)
 * An [iOS Toolchain](https://github.com/sbingner/llvm-project)
+  * *To build your own toolchain, see [here](https://github.com/usrlightmann/building-an-ios-toolchain)*
 * A [patched SDK](https://github.com/theos/sdks)
 * A project containing, at a minimum, a Tweak file, a TweakName.plist, and a control file.
 
@@ -22,8 +23,8 @@ Things that you'll need:
 
 Add the following environment variables to your `.profile` (bash) or `.zshenv` (zsh):
 * `export MBS=~/my-build-system`
-* `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MBS/toolchain/linux/iphone/lib`
-* `export PATH=$PATH:$MBS/toolchain/linux/iphone/bin`
+* `export LD_LIBRARY_PATH=$MBS/toolchain/linux/iphone/lib:$LD_LIBRARY_PATH`
+* `export PATH=$MBS/toolchain/linux/iphone/bin:$PATH`
 
 Restart your shell and `echo $MBS` to confirm that it worked.
 
@@ -38,7 +39,7 @@ Restart your shell and `echo $MBS` to confirm that it worked.
     # Relevant Headers
     git clone https://github.com/theos/headers.git $MBS/include
 
-    # Relevant Libs
+    # Relevant Libraries
     git clone https://github.com/theos/lib.git $MBS/lib
 
     # Logos
@@ -83,12 +84,12 @@ For simplicity's sake, we're going to keep the naming scheme constant across all
 
 ---
 
-## 3. Compile with Clang
+## 3. Compile via Clang
 ### The command
 `clang++ -target arm64-apple-darwin14-ld -target arm64e-apple-darwin14-ld -arch arm64 -arch arm64e -fobjc-arc -miphoneos-version-min=13.0 -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -c -o Tweak.xm.o Tweak.xm.mm`
 
 ### Explanation
-`clang++` is a symlink to `clang` which is a symlink to `clang-10`, a [compiler](https://releases.llvm.org/10.0.0/tools/clang/docs/index.html#using-clang-as-a-compiler) in the [llvm project](https://github.com/llvm/llvm-project#readme) capable of compiling c++ code.
+`clang` is a [compiler front-end](https://clang.llvm.org/) in the [LLVM project](https://github.com/llvm/llvm-project#readme) capable of compiling C-based code (C, C++, Objective-C, etc). We're using `clang++` here because, by default, `clang` only links against the C standard library whereas `clang++` links against both the C and C++ standard libraries.
 
 `-target <target triple>` specifies which platform(s) we want to build for. [From LLVM](https://releases.llvm.org/10.0.0/tools/clang/docs/CrossCompilation.html#target-triple): *"If you don’t specify the target, CPU names won’t match (since Clang assumes the host triple), and the compilation will go ahead, creating code for the host platform, which will break later on when assembling or linking."*
 
@@ -114,9 +115,9 @@ The rest of the command is evaluated as an input file (e.g., `Tweak.xm.mm`).
 
 ---
 
-## 4. Link with Clang
+## 4. Link via Clang
 ### The command
-`clang++ -target arm64-apple-darwin14-ld -target arm64e-apple-darwin14-ld -arch arm64 -arch arm64e -fobjc-arc -miphoneos-version-min=13.0 -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -fcolor-diagnostics -framework CoreFoundation -framework CoreGraphics -framework Foundation -framework UIKit -L$MBS/lib -lsubstrate -lobjc -lc++ -lSystem.B -dynamiclib -ggdb -o TweakName.dylib Tweak.xm.o`
+`clang++ -target arm64-apple-darwin14-ld -target arm64e-apple-darwin14-ld -arch arm64 -arch arm64e -fobjc-arc -miphoneos-version-min=13.0 -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -fcolor-diagnostics -framework CoreFoundation -framework CoreGraphics -framework Foundation -framework UIKit -L$MBS/lib -lsubstrate -lobjc -lSystem.B -dynamiclib -ggdb -o TweakName.dylib Tweak.xm.o`
 
 #### New flags explained
 `-fcolor-diagnostics` tells clang to add color to diagnostic information.
@@ -127,11 +128,13 @@ The rest of the command is evaluated as an input file (e.g., `Tweak.xm.mm`).
 
 `-l<library name>` specifies which library/libraries we want to link against.
 
-`-dynamiclib` tells clang to compile and link dynamically.
+`-dynamiclib` tells the linker to link [dynamically](https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/OverviewOfDynamicLibraries.html) (as opposed to statically).
 
-`-ggdb` tells clang to produce debugging information for ggdb.
+`-ggdb` tells the linker to produce debugging information for ggdb.
 
-**Note:** If you're compiling for legacy architectures (armv7s and earlier), you'll want to add the following flags to the above command : `-Xlinker -segalign -Xlinker 4000`. For the reason as to why, see [here](https://github.com/theos/theos/blob/1e1c91ba1ff6dc63012fc3deed870787f4c402e5/makefiles/targets/_common/iphone.mk#L81).
+**Note:** by default, clang uses [GNU ld](https://ftp.gnu.org/old-gnu/Manuals/ld-2.9.1/html_mono/ld.html) as its linker. To select an [alternate linker](https://clang.llvm.org/docs/Toolchain.html#linker), add the following flag to the command above: `-fuse-ld=<linker name>`
+
+**Note 2:** If you're compiling for legacy architectures (armv7s and earlier), you'll want to add the following flags to the above command : `-Xlinker -segalign -Xlinker 4000`. For the reason as to why, see [here](https://github.com/theos/theos/blob/1e1c91ba1ff6dc63012fc3deed870787f4c402e5/makefiles/targets/_common/iphone.mk#L81).
 
 ---
 
