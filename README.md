@@ -1,4 +1,5 @@
 # How to manually compile and build a tweak (on Linux)
+
 After coming across Kritanta's [guide](https://github.com/KritantaDev/Guides/blob/master/TweakWithoutTheos.md) on how to build a tweak w/o [Theos](https://github.com/theos/theos) (or similar tools) on Darwin systems, I figured that it may be helpful to have something similar catered for Linux systems.
 
 **Note:** all credit goes to [Kritanta](https://twitter.com/arm64e) for her work on this guide. I've simply changed the parts that were Darwin-specific, revised some of the wording, and adjusted some stylistic elements.
@@ -63,6 +64,7 @@ Restart your shell and `echo $MBS` to confirm that it worked.
 ---
 
 ## The working directory
+
 For this guide, the project directory will contain the following: `Tweak.xm`, `TweakName.plist`, and `control`.
 
 This is kept simple for demonstration purposes, but just know that it can be scaled for larger projects with multiple tweak files, subprojects, etc.
@@ -70,11 +72,12 @@ This is kept simple for demonstration purposes, but just know that it can be sca
 ---
 
 ## 2. Preprocess with Logos
+
 [Logos](https://github.com/theos/logos) is a preprocessor created by the [Theos dev team](https://theos.dev/) to make writing tweaks less arduous. To learn more about what it is capable of/provides, see the iPhoneDevWiki's [documentation](https://iphonedev.wiki/index.php/Logos).
 
 Using Logos, you can convert .xm and .x files to .m and .mm files respectively like so:
 
-`$MBS/logos/bin/logos.pl [input] > [output]`
+    $MBS/logos/bin/logos.pl [input] > [output]
 
 For .x files, the input will be `Tweak.x` and the output will be `Tweak.x.m`.
 
@@ -85,10 +88,12 @@ For simplicity's sake, we're going to keep the naming scheme constant across all
 ---
 
 ## 3. Compile via Clang
-### The command
-`clang++ -target arm64-apple-darwin14-ld -target arm64e-apple-darwin14-ld -arch arm64 -arch arm64e -fobjc-arc -miphoneos-version-min=13.0 -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -c -o Tweak.xm.o Tweak.xm.mm`
+### The command:
 
-### Explanation
+    clang++ -target arm64-apple-darwin14-ld -target arm64e-apple-darwin14-ld -arch arm64 -arch arm64e -fobjc-arc -miphoneos-version-min=13.0 -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -c -o Tweak.xm.o Tweak.xm.mm
+
+### Explanation:
+
 `clang` is a [compiler front-end](https://clang.llvm.org/) in the [LLVM project](https://github.com/llvm/llvm-project#readme) capable of compiling C-based code (C, C++, Objective-C, etc). We're using `clang++` here because, by default, `clang` only links against the C standard library whereas `clang++` links against both the C and C++ standard libraries.
 
 `-target <target triple>` specifies which platform(s) we want to build for. [From LLVM](https://releases.llvm.org/10.0.0/tools/clang/docs/CrossCompilation.html#target-triple): *"If you don’t specify the target, CPU names won’t match (since Clang assumes the host triple), and the compilation will go ahead, creating code for the host platform, which will break later on when assembling or linking."*
@@ -116,10 +121,12 @@ The rest of the command is evaluated as an input file (e.g., `Tweak.xm.mm`).
 ---
 
 ## 4. Link via Clang
-### The command
-`clang++ -target arm64-apple-darwin14-ld -target arm64e-apple-darwin14-ld -arch arm64 -arch arm64e -fobjc-arc -miphoneos-version-min=13.0 -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -fcolor-diagnostics -framework CoreFoundation -framework CoreGraphics -framework Foundation -framework UIKit -L$MBS/lib -lsubstrate -lobjc -lSystem.B -dynamiclib -ggdb -o TweakName.dylib Tweak.xm.o`
+### The command:
 
-#### New flags explained
+    clang++ -target arm64-apple-darwin14-ld -target arm64e-apple-darwin14-ld -arch arm64 -arch arm64e -fobjc-arc -miphoneos-version-min=13.0 -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -fcolor-diagnostics -framework CoreFoundation -framework CoreGraphics -framework Foundation -framework UIKit -L$MBS/lib -lsubstrate -lobjc -lSystem.B -dynamiclib -ggdb -o TweakName.dylib Tweak.xm.o
+
+### New flags explained:
+
 `-fcolor-diagnostics` tells clang to add color to diagnostic information.
 
 `-framework <framework name>` specifies which framework(s) we want to link against.
@@ -139,30 +146,32 @@ The rest of the command is evaluated as an input file (e.g., `Tweak.xm.mm`).
 ---
 
 ## 5. Generate debug symbols
-`dsymutil TweakName.dylib`
+
+    dsymutil TweakName.dylib
 
 ---
 
 ## 6. Fake code signature
-`ldid -S TweakName.dylib`
+
+    ldid -S TweakName.dylib
 
 ---
 
 ## 7. Package the tweak
-### Create the necessary structure
+### Create the necessary structure:
+
 Dpkg is picky about package structures, so we need to set this up properly in order for our package to install as expected.
 
-`mkdir -p .tmp/Library/MobileSubstrate/DynamicLibraries`
+    mkdir -p .tmp/DEBIAN .tmp/Library/MobileSubstrate/DynamicLibraries
 
-`mkdir .tmp/DEBIAN`
+### Copy the files into their respective places:
 
-### Copy the files into their respective places
-`cp TweakName.{dylib,plist} .tmp/Library/MobileSubstrate/DynamicLibraries/`
+    cp TweakName.{dylib,plist} .tmp/Library/MobileSubstrate/DynamicLibraries/
+    cp control .tmp/DEBIAN/
 
-`cp control .tmp/DEBIAN/`
+### Build the deb:
 
-### Build the deb
-`dpkg-deb -b -Zgzip -z9 .tmp .`
+    dpkg-deb -b -Zgzip -z9 .tmp .
 
 **Note:** some packages will have to be built as root in order to retain the desired permissions/ownership. You will know if this is the case if something doesn't work as expected or if dpkg/apt throw errors upon the package's installation.
 
