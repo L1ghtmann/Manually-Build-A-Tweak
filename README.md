@@ -2,7 +2,7 @@
 
 After coming across Kritanta's [guide](https://github.com/KritantaDev/Guides/blob/master/TweakWithoutTheos.md) on how to build a tweak w/o [Theos](https://github.com/theos/theos) (or similar tools) on Darwin systems, I figured that it may be helpful to have something similar catered for Linux systems.
 
-**Note:** all credit goes to [Kritanta](https://twitter.com/arm64e) for her work on this guide. I've simply changed the parts that were Darwin-specific, revised some of the wording, and adjusted some stylistic elements.
+**Note:** huge thanks to [Kritanta](https://twitter.com/arm64e) for her initial work on this guide. In my rendition, I've changed the parts that were Darwin-specific, added relevant documentation links, elaborated various bits, revised some of the wording, and adjusted some stylistic elements.
 
 ---
 
@@ -106,7 +106,7 @@ For simplicity's sake, we're going to keep the naming scheme constant across all
 
 `-isysroot <directory>` specifies our target sdk as the system root directory.
 
-`-isystem <directory>` specifies an additional system include search directory.
+`-isystem <directory>` specifies an additional system include search path.
 
 `-Wall` tells clang to enable (almost) all of its warning modules.
 
@@ -123,15 +123,17 @@ The rest of the command is evaluated as an input file (e.g., `Tweak.xm.mm`).
 ## 4. Link via Clang
 ### The command:
 
-    clang++ -target arm64-apple-darwin14-ld -target arm64e-apple-darwin14-ld -arch arm64 -arch arm64e -fobjc-arc -miphoneos-version-min=13.0 -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -fcolor-diagnostics -framework CoreFoundation -framework CoreGraphics -framework Foundation -framework UIKit -L$MBS/lib -lsubstrate -lobjc -lSystem.B -dynamiclib -ggdb -o TweakName.dylib Tweak.xm.o
+    clang++ -target arm64-apple-darwin14-ld -target arm64e-apple-darwin14-ld -arch arm64 -arch arm64e -fobjc-arc -miphoneos-version-min=13.0 -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -fcolor-diagnostics -F$MBS/sdks/iPhoneOS14.4.sdk/System/Library/PrivateFrameworks -framework CoreFoundation -framework CoreGraphics -framework Foundation -framework UIKit -L$MBS/lib -lsubstrate -lobjc -lSystem.B -dynamiclib -ggdb -o TweakName.dylib Tweak.xm.o
 
 ### New flags explained:
 
 `-fcolor-diagnostics` tells clang to add color to diagnostic information.
 
+`-F<directory>` specifies an additional framework search path (required when linking against [private frameworks](https://github.com/SparkDev97/iOS14-Runtime-Headers/tree/master/PrivateFrameworks) included in a patched sdk).
+
 `-framework <framework name>` specifies which framework(s) we want to link against.
 
-`-L<directory>` specifies a library search directory.
+`-L<directory>` specifies an additional library search path.
 
 `-l<library name>` specifies which library/libraries we want to link against.
 
