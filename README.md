@@ -90,19 +90,17 @@ For simplicity's sake, we're going to keep the naming scheme constant across all
 ## 3. Compile via Clang
 ### The command:
 
-    clang++ -target arm64-apple-darwin14-ld -target arm64e-apple-darwin14-ld -arch arm64 -arch arm64e -fobjc-arc -miphoneos-version-min=13.0 -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -c -o Tweak.xm.o Tweak.xm.mm
+    clang++ -target arm64-apple-ios13.0 -target arm64e-apple-ios13.0 -arch arm64 -arch arm64e -fobjc-arc -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -c -o Tweak.xm.o Tweak.xm.mm
 
 ### Explanation:
 
 `clang` is a [compiler front-end](https://clang.llvm.org/) in the [LLVM project](https://github.com/llvm/llvm-project#readme) capable of compiling C-based code (C, C++, Objective-C, etc). We're using `clang++` here because, by default, `clang` only links against the C standard library whereas `clang++` links against both the C and C++ standard libraries.
 
-`-target <target triple>` specifies which platform(s) we want to build for. [From LLVM](https://releases.llvm.org/10.0.0/tools/clang/docs/CrossCompilation.html#target-triple): *"If you don’t specify the target, CPU names won’t match (since Clang assumes the host triple), and the compilation will go ahead, creating code for the host platform, which will break later on when assembling or linking."*
+`-target <target triple>` specifies which platform(s) we want to build for and, in our case, the minimum iOS version our project is targeting. [From LLVM](https://releases.llvm.org/10.0.0/tools/clang/docs/CrossCompilation.html#target-triple): *"If you don’t specify the target, CPU names won’t match (since Clang assumes the host triple), and the compilation will go ahead, creating code for the host platform, which will break later on when assembling or linking."*
 
 `-arch <architecture>` specifies which architecture(s) we want to build for.
 
 `-fobjc-arc` tells clang to enable [ARC](https://clang.llvm.org/docs/AutomaticReferenceCounting.html#general) (Automatic Reference Counting).
-
-`-miphoneos-version-min=<value>` specifies the minimum iOS version our project is targeting.
 
 `-isysroot <directory>` specifies our target sdk as the system root directory.
 
@@ -123,7 +121,7 @@ The rest of the command is evaluated as an input file (e.g., `Tweak.xm.mm`).
 ## 4. Link via Clang
 ### The command:
 
-    clang++ -target arm64-apple-darwin14-ld -target arm64e-apple-darwin14-ld -arch arm64 -arch arm64e -fobjc-arc -miphoneos-version-min=13.0 -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -fcolor-diagnostics -F$MBS/sdks/iPhoneOS14.4.sdk/System/Library/PrivateFrameworks -framework CoreFoundation -framework CoreGraphics -framework Foundation -framework UIKit -L$MBS/lib -lsubstrate -lobjc -lSystem.B -dynamiclib -ggdb -o TweakName.dylib Tweak.xm.o
+    clang++ -target arm64-apple-ios13.0 -target arm64e-apple-ios13.0 -arch arm64 -arch arm64e -fobjc-arc -isysroot $MBS/sdks/iPhoneOS14.4.sdk -isystem $MBS/include -Wall -O2 -fcolor-diagnostics -F$MBS/sdks/iPhoneOS14.4.sdk/System/Library/PrivateFrameworks -framework CoreFoundation -framework CoreGraphics -framework Foundation -framework UIKit -L$MBS/lib -lsubstrate -lobjc -lSystem.B -dynamiclib -ggdb -o TweakName.dylib Tweak.xm.o
 
 ### New flags explained:
 
