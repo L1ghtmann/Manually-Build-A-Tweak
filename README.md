@@ -1,8 +1,8 @@
 # How to manually compile and build a tweak (on Linux)
 
-After coming across Kritanta's [guide](https://github.com/KritantaDev/Guides/blob/master/TweakWithoutTheos.md) on how to build a tweak w/o [Theos](https://github.com/theos/theos) (or similar tools) on Darwin systems, I figured that it may be helpful to have something similar catered for Linux systems.
+After coming across cynder's [guide](https://github.com/cxnder/Guides/blob/master/TweakWithoutTheos.md) on how to build a tweak w/o [Theos](https://github.com/theos/theos) (or similar tools) on Darwin systems, I figured that it may be helpful to have something similar catered for Linux systems.
 
-**Note:** huge thanks to [Kritanta](https://twitter.com/arm64e) for her initial work on this guide. In my rendition, I've changed the parts that were Darwin-specific, added relevant documentation links, elaborated various bits, revised some of the wording, and adjusted some stylistic elements.
+**Note:** huge thanks to [cynder](https://twitter.com/arm64e) for her initial work on this guide. In my rendition, I've changed the parts that were Darwin-specific, added relevant documentation links, elaborated various bits, revised some of the wording, and adjusted some stylistic elements.
 
 ---
 
@@ -14,7 +14,7 @@ Things that you'll need:
 * Relevant [libraries](https://github.com/theos/lib)
 * [Logos](https://github.com/theos/logos)
 * An [iOS Toolchain](https://github.com/sbingner/llvm-project)
-  * *To build your own toolchain, see [here](https://github.com/usrlightmann/building-an-ios-toolchain)*
+  * *To build your own toolchain, see [here](https://github.com/l1ghtmann/building-an-ios-toolchain)*
 * A [patched SDK](https://github.com/theos/sdks)
 * A project containing, at a minimum, a Tweak file, a TweakName.plist, and a control file.
 
@@ -181,4 +181,4 @@ Dpkg is picky about package structures, so we need to set this up properly in or
 
 And, voilà, you have your package!
 
-~ Kritanta & Lightmann
+~ cynder & Lightmann
