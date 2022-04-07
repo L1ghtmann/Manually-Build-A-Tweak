@@ -1,12 +1,12 @@
 # How to manually compile and build a tweak (on Linux)
 
-After coming across cynder's [guide](https://github.com/cxnder/Guides/blob/master/TweakWithoutTheos.md) on how to build a tweak w/o [Theos](https://github.com/theos/theos) (or similar tools) on Darwin systems, I figured that it may be helpful to have something similar catered for Linux systems.
+After coming across Cynder's [guide](https://github.com/cxnder/Guides/blob/master/TweakWithoutTheos.md) on how to build a tweak w/o [Theos](https://github.com/theos/theos) (or similar tools) on Darwin systems, I figured that it may be helpful to have something similar catered for Linux systems.
 
-**Note:** huge thanks to [cynder](https://twitter.com/arm64e) for her initial work on this guide. In my rendition, I've changed the parts that were Darwin-specific, added relevant documentation links, elaborated various bits, revised some of the wording, and adjusted some stylistic elements.
+**Note:** huge thanks to [Cynder](https://twitter.com/arm64e) for her initial work on this guide. In my rendition, I've changed the parts that were Darwin-specific, added relevant documentation links, elaborated various bits, revised some of the wording, and adjusted some stylistic elements.
 
 ---
 
-Things that you'll need:
+Things that you'll need (which we'll get in Step 1 below):
 * build-essential, coreutils, curl, dpkg, git, libtinfo5, perl, tar, and unzip
   * *build-essential and libtinfo5 or the equivalents for your distro*
   * *Note: additional libraries may be required for some distros*
@@ -22,39 +22,41 @@ Things that you'll need:
 
 ## 1. Preliminary Setup
 
-Add the following environment variables to your `.profile` (bash) or `.zshenv` (zsh):
-* `export MBS=~/my-build-system`
-* `export LD_LIBRARY_PATH=$MBS/toolchain/linux/iphone/lib:$LD_LIBRARY_PATH`
-* `export PATH=$MBS/toolchain/linux/iphone/bin:$PATH`
-
-Restart your shell and `echo $MBS` to confirm that it worked.
-
 **Note:** this setup process can be sped up *greatly* if you copy the following into a shell script, give it execute permissions, and run it instead of copying/typing each command out individually.
 
-    # Dependencies
-    sudo apt-get install build-essential coreutils curl git libtinfo5 perl tar unzip
+    # Set our environment variables
+    echo "export MBS=~/my-build-system" >> ~/.profile
 
-    # Making a centralized directory to hold all of our stuff
+    echo 'export LD_LIBRARY_PATH=$MBS/toolchain/lib:$LD_LIBRARY_PATH' >> ~/.profile
+
+    echo 'export PATH=$MBS/toolchain/bin:$PATH' >> ~/.profile
+
+    # Refresh our shell
+    source ~/.profile
+
+    # Get necessary dependencies
+    sudo apt install build-essential coreutils curl git libtinfo5 perl tar unzip
+
+    # Make a centralized directory to hold all of our stuff
     mkdir -p $MBS/{include,lib,logos,toolchain,sdks}
 
-    # Relevant Headers
+    # Get relevant headers
     git clone https://github.com/theos/headers.git $MBS/include
 
-    # Relevant Libraries
+    # Get relevant libraries
     git clone https://github.com/theos/lib.git $MBS/lib
 
-    # Logos
+    # Get Logos
     git clone https://github.com/theos/logos.git $MBS/logos
 
-    # Toolchain (x86|not Swift compatible)
+    # Get a toolchain (x86|not Swift compatible)
     curl -LO https://github.com/sbingner/llvm-project/releases/latest/download/linux-ios-arm64e-clang-toolchain.tar.lzma
     TMP=$(mktemp -d)
     tar -xvf linux-ios-arm64e-clang-toolchain.tar.lzma -C $TMP
-    mkdir -p $MBS/toolchain/linux/iphone
-    mv $TMP/ios-arm64e-clang-toolchain/* $MBS/toolchain/linux/iphone/
+    mv $TMP/ios-arm64e-clang-toolchain/* $MBS/toolchain/
     rm -r linux-ios-arm64e-clang-toolchain.tar.lzma $TMP
 
-    # Patched sdks
+    # Get patched SDKs
     curl -LO https://github.com/theos/sdks/archive/master.zip
     TMP=$(mktemp -d)
     unzip master.zip -d $TMP
@@ -73,7 +75,7 @@ This is kept simple for demonstration purposes, but just know that it can be sca
 
 ## 2. Preprocess with Logos
 
-[Logos](https://github.com/theos/logos) is a preprocessor created by the [Theos dev team](https://theos.dev/) to make writing tweaks less arduous. To learn more about what it is capable of/provides, see the iPhoneDevWiki's [documentation](https://iphonedev.wiki/index.php/Logos).
+[Logos](https://github.com/theos/logos) is a preprocessor created by the [Theos dev team](https://twitter.com/theosdev) to make writing tweaks less arduous. To learn more about what it is capable of/provides, see its documentation on [theos.dev](https://theos.dev/docs/logos-syntax).
 
 Using Logos, you can convert .xm and .x files to .m and .mm files respectively like so:
 
@@ -181,4 +183,4 @@ Dpkg is picky about package structures, so we need to set this up properly in or
 
 And, voilà, you have your package!
 
-~ cynder & Lightmann
+~ Cynder & Lightmann
